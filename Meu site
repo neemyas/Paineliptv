@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nemo IPTV</title>
+    <style>
+        :root {
+            --primary: #00d2ff;
+            --bg-dark: #121212;
+            --card-bg: #1e1e1e;
+            --text: #ffffff;
+        }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text);
+            text-align: center;
+        }
+        header {
+            padding: 20px;
+            background-color: #000;
+            border-bottom: 2px solid var(--primary);
+        }
+        h1 { margin: 0; font-size: 24px; color: var(--primary); }
+        
+        .container { padding: 20px; }
+        
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px 0;
+            background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            border: none;
+            width: 90%;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+        .whatsapp-btn { background: #25D366; }
+        
+        .card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+        
+        input {
+            width: 90%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background-color: #2a2a2a;
+            color: white;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Nemo IPTV</h1>
+</header>
+
+<div class="container">
+    <!-- Seção de Download -->
+    <div class="card">
+        <h2>Nosso Aplicativo</h2>
+        <p>A melhor experiência de streaming na palma da sua mão.</p>
+        <a href="https://www.mediafire.com/file/svgbdbnebbrar2v/app-debug.apk/file" target="_blank" class="btn">Baixar App (MediaFire)</a>
+    </div>
+
+    <!-- Seção de Planos e Pagamento -->
+    <div class="card">
+        <h2>Assine Agora</h2>
+        <p>Plano Completo</p>
+        <h3 style="color: var(--primary);">R$ 35,00 / mês</h3>
+        <!-- Substitua o link do href pelo Link de Pagamento do Mercado Pago ou Asaas -->
+        <a href="COLE_O_LINK_DO_MERCADO_PAGO_AQUI" target="_blank" class="btn">Pagar com Pix</a>
+    </div>
+
+    <!-- Central do Usuário -->
+    <div class="card">
+        <h2>Área do Cliente</h2>
+        <form action="#">
+            <input type="text" placeholder="Seu Usuário" required>
+            <input type="password" placeholder="Sua Senha" required>
+            <button type="submit" class="btn">Entrar</button>
+        </form>
+    </div>
+
+    <!-- Portal de Contato -->
+    <div class="card">
+        <h2>Precisa de Ajuda?</h2>
+        <p>Fale diretamente com nosso suporte.</p>
+        <a href="https://wa.me/5534998958333?text=Olá, preciso de suporte na Nemo IPTV." target="_blank" class="btn whatsapp-btn">Contato via WhatsApp</a>
+    </div>
+</div>
+
+</body>
+</html>

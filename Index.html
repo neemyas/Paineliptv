@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nemo IPTV</title>
+    <!-- Biblioteca HLS para rodar links de IPTV no navegador -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        :root {
+            --primary: #00d2ff;
+            --bg-dark: #121212;
+            --card-bg: #1e1e1e;
+            --text: #ffffff;
+            --success: #28a745;
+            --danger: #dc3545;
+        }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text);
+            text-align: center;
+        }
+        header {
+            padding: 20px;
+            background-color: #000;
+            border-bottom: 2px solid var(--primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .logo {
+            max-width: 120px;
+            height: auto;
+            margin-bottom: 10px;
+            border-radius: 10px;
+        }
+
+        h1 { margin: 0; font-size: 24px; color: var(--primary); }
+        
+        .container { padding: 20px; max-width: 600px; margin: auto; }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            margin: 8px 0;
+            background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            border: none;
+            width: 100%;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+        .whatsapp-btn { background: #25D366; }
+        .card-btn { background: linear-gradient(90deg, #28a745 0%, #20c997 100%); }
+        .admin-btn { background: linear-gradient(90deg, #ffc107 0%, #ff9800 100%); color: #000; }
+        
+        .card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background-color: #2a2a2a;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        .tab-menu {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: #2a2a2a;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .tab-btn.active {
+            background: var(--primary);
+            color: #000;
+        }
+
+        .section-view { display: none; }
+        .section-view.active { display: block; }
+
+        .info-box {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid var(--primary);
+            text-align: left;
+        }
+
+        video {
+            width: 100%;
+            max-height: 320px;
+            background: #000;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        ul { text-align: left; padding-left: 20px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="logo.jpg" alt="Logo Nemo IPTV" class="logo">
+    <h1>Nemo IPTV</h1>
+</header>
+
+<div class="container">
+    <!-- Seção do Player Web M3U -->
+    <div class="card">
+        <h2>Player Web (M3U)</h2>
+        <p>Cole o link direto do canal (.m3u8) para assistir online:</p>
+        <input type="text" id="stream-url" placeholder="https://exemplo.com/live/stream.m3u8">
+        <button onclick="carregarStream()" class="btn">Assistir Canal</button>
+        <video id="web-player" controls></video>
+    </div>
+
+    <!-- Seção de Download -->
+    <div class="card">
+        <h2>Nosso Aplicativo</h2>
+        <p>A melhor experiência de streaming na palma da sua mão.</p>
+        <a href="https://www.mediafire.com/file/svgbdbnebbrar2v/app-debug.apk/file" target="_blank" class="btn">Baixar App (MediaFire)</a>
+    </div>
+
+    <!-- Seção de Planos e Pagamento Avulso -->
+    <div class="card">
+        <h2>Assine Agora (Pix)</h2>
+        <p>Plano Completo</p>
+        <h3 style="color: var(--primary);">R$ 35,00 / mês</h3>
+        <a href="https://mpago.la/1n3PzNB" target="_blank" class="btn">Pagar com Pix</a>
+    </div>
+
+    <!-- Central de Acesso (Cliente / Administrador) -->
+    <div class="card">
+        <h2>Portal de Acesso</h2>
+        
+        <div class="tab-menu">
+            <button class="tab-btn active" onclick="mudarAba('cliente')">Sou Cliente</button>
+            <button class="tab-btn" onclick="mudarAba('admin')">Administrador</button>
+        </div>
+
+        <!-- ABA CLIENTE -->
+        <div id="view-cliente" class="section-view active">
+            <!-- Tela de Login do Cliente -->
+            <div id="cliente-login-box">
+                <p>Entre com seu usuário e senha criados pelo suporte.</p>
+                <form onsubmit="fazerLoginCliente(event)">
+                    <input type="text" id="cli-user" placeholder="Usuário" required>
+                    <input type="password" id="cli-pass" placeholder="Senha" required>
+                    <button type="submit" class="btn">Entrar na Conta</button>
+                </form>
+            </div>
+
+            <!-- Painel Interno do Cliente -->
+            <div id="cliente-painel" style="display: none;">
+                <h3 style="color: var(--primary);">Olá, <span id="painel-user-nome"></span>!</h3>
+                <div class="info-box">
+                    <p>Status: <strong style="color: var(--success);">Ativo</strong></p>
+                    <p>Vencimento da Mensalidade:</p>
+                    <h3 id="painel-vencimento" style="margin: 5px 0; color: #ffc107;">--/--/----</h3>
+                </div>
+                <p>Cadastre seu cartão para débito automático mensal:</p>
+                <a href="https://mpago.la/1VKgbdM" target="_blank" class="btn card-btn">Cadastrar Cartão (Automático)</a>
+                <button onclick="sairCliente()" class="btn" style="background: var(--danger); margin-top: 15px;">Sair</button>
+            </div>
+        </div>
+
+        <!-- ABA ADMINISTRADOR -->
+        <div id="view-admin" class="section-view">
+            <div id="admin-login-box">
+                <p>Digite a senha de Administrador (padrão: <b>admin123</b>)</p>
+                <input type="password" id="admin-master-pass" placeholder="Senha Admin">
+                <button onclick="logarAdmin()" class="btn admin-btn">Entrar como Admin</button>
+            </div>
+
+            <div id="admin-painel" style="display: none;">
+                <h3 style="color: #ffc107;">Painel de Controle do Admin</h3>
+                <p>Cadastrar Novo Cliente (Validade de 30 dias):</p>
+                <input type="text" id="novo-user" placeholder="Novo Usuário">
+                <input type="password" id="novo-pass" placeholder="Nova Senha">
+                <button onclick="cadastrarCliente()" class="btn admin-btn">Criar Acesso</button>
+
+                <hr style="border-color: #333; margin: 20px 0;">
+                <h4>Clientes Cadastrados:</h4>
+                <div id="lista-clientes" style="max-height: 150px; overflow-y: auto;">
+                    <!-- Lista injetada via JS -->
+                </div>
+                <button onclick="sairAdmin()" class="btn" style="background: var(--danger); margin-top: 15px;">Sair do Admin</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portal de Contato -->
+    <div class="card">
+        <h2>Precisa de Ajuda?</h2>
+        <p>Fale diretamente com nosso suporte.</p>
+        <a href="https://api.whatsapp.com/send?phone=5534998958333&text=Ol%C3%A1%2C%20preciso%20de%20suporte%20na%20Nemo%20IPTV!" class="btn whatsapp-btn">Contato via WhatsApp</a>
+    </div>
+</div>
+
+<script>
+    // --- LÓGICA DO PLAYER IPTV WEB ---
+    function carregarStream() {
+        var url = document.getElementById('stream-url').value;
+        var video = document.getElementById('web-player');
+
+        if (!url) {
+            alert('Por favor, insira um link de stream válido.');
+            return;
+        }
+
+        if (Hls.isSupported()) {
+            var hls = new Hls();
+            hls.loadSource(url);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                video.play();
+            });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = url;
+            video.addEventListener('loadedmetadata', function() {
+                video.play();
+            });
+        } else {
+            alert('Seu navegador não suporta reprodução HLS nativa.');
+        }
+    }
+
+    // --- NAVEGAÇÃO DE ABAS ---
+    function mudarAba(aba) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
+
+        if (aba === 'cliente') {
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            document.getElementById('view-cliente').classList.add('active');
+        } else {
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            document.getElementById('view-admin').classList.add('active');
+        }
+    }
+
+    // --- BANCO DE DADOS LOCAL (LocalStorage) ---
+    function getClientes() {
+        let dados = localStorage.getItem('nemo_clientes');
+        return dados ? JSON.parse(dados) : [];
+    }
+
+    function salvarClientes(clientes) {
+        localStorage.setItem('nemo_clientes', JSON.stringify(clientes));
+    }
+
+    // --- LÓGICA DO ADMINISTRADOR ---
+    function logarAdmin() {
+        let senha = document.getElementById('admin-master-pass').value;
+        if (senha === 'admin123') {
+            document.getElementById('admin-login-box').style.display = 'none';
+            document.getElementById('admin-painel').style.display = 'block';
+            atualizarListaClientes();
+        } else {
+            alert('Senha de Administrador incorreta!');
+        }
+    }
+
+    function cadastrarCliente() {
+        let user = document.getElementById('novo-user').value.trim();
+        let pass = document.getElementById('novo-pass').value.trim();
+
+        if (!user || !pass) {
+            alert('Preencha o usuário e a senha do cliente.');
+            return;
+        }
+
+        let clientes = getClientes();
+        
+        // Verifica se já existe
+        if (clientes.some(c => c.user === user)) {
+            alert('Este usuário já existe!');
+            return;
+        }
+
+        // Calcula 30 dias a partir de hoje
+        let venc = new Date();
+        venc.setDate(venc.getDate() + 30);
+
+        clientes.push({
+            user: user,
+            pass: pass,
+            vencimento: venc.toLocaleDateString('pt-BR')
+        });
+
+        salvarClientes(clientes);
+        alert('Cliente cadastrado com sucesso! Validade: 30 dias.');
+        
+        document.getElementById('novo-user').value = '';
+        document.getElementById('novo-pass').value = '';
+        atualizarListaClientes();
+    }
+
+    function atualizarListaClientes() {
+        let clientes = getClientes();
+        let div = document.getElementById('lista-clientes');
+        
+        if (clientes.length === 0) {
+            div.innerHTML = '<p style="color: #aaa; font-size: 13px;">Nenhum cliente cadastrado.</p>';
+            return;
+        }
+
+        let html = '<ul style="font-size: 13px;">';
+        clientes.forEach((c, index) => {
+            html += `<li><b>${c.user}</b> - Vence: ${c.vencimento} <button onclick="removerCliente(${index})" style="background:red; color:white; border:none; padding:2px 5px; border-radius:3px; cursor:pointer; margin-left:5px;">X</button></li>`;
+        });
+        html += '</ul>';
+        div.innerHTML = html;
+    }
+
+    function removerCliente(index) {
+        let clientes = getClientes();
+        clientes.splice(index, 1);
+        salvarClientes(clientes);
+        atualizarListaClientes();
+    }
+
+    function sairAdmin() {
+        document.getElementById('admin-master-pass').value = '';
+        document.getElementById('admin-painel').style.display = 'none';
+        document.getElementById('admin-login-box').style.display = 'block';
+    }
+
+    // --- LÓGICA DE LOGIN DO CLIENTE ---
+    function fazerLoginCliente(event) {
+        event.preventDefault();
+        let user = document.getElementById('cli-user').value.trim();
+        let pass = document.getElementById('cli-pass').value.trim();
+
+        let clientes = getClientes();
+        let clienteEncontrado = clientes.find(c => c.user === user && c.pass === pass);
+
+        if (clienteEncontrado) {
+            document.getElementById('painel-user-nome').innerText = clienteEncontrado.user;
+            document.getElementById('painel-vencimento').innerText = clienteEncontrado.vencimento;
+
+            document.getElementById('cliente-login-box').style.display = 'none';
+            document.getElementById('cliente-painel').style.display = 'block';
+        } else {
+            alert('Usuário ou senha inválidos, ou cadastro não encontrado pelo Administrador.');
+        }
+    }
+
+    function sairCliente() {
+        document.getElementById('cli-user').value = '';
+        document.getElementById('cli-pass').value = '';
+        document.getElementById('cliente-painel').style.display = 'none';
+        document.getElementById('cliente-login-box').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
